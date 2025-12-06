@@ -1,8 +1,24 @@
-import { type NextRequest } from "next/server";
-import { updateSession } from "@/lib/supabase/middleware";
+import { type NextRequest, NextResponse } from "next/server";
 
 export async function middleware(request: NextRequest) {
-  return await updateSession(request);
+  // Simple JWT token check - token is in httpOnly cookie
+  const token = request.cookies.get('auth_token')?.value;
+  
+  // Allow access to auth pages without token
+  if (request.nextUrl.pathname.startsWith('/auth/')) {
+    // If user has token and is on auth page, redirect to home
+    if (token && (request.nextUrl.pathname === '/auth/login' || request.nextUrl.pathname === '/auth/signup')) {
+      return NextResponse.redirect(new URL('/', request.url));
+    }
+    return NextResponse.next();
+  }
+  
+  // Redirect to login if no token and not on auth page or API route
+  if (!token && !request.nextUrl.pathname.startsWith('/api/')) {
+    return NextResponse.redirect(new URL('/auth/login', request.url));
+  }
+  
+  return NextResponse.next();
 }
 
 export const config = {

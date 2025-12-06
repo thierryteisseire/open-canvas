@@ -152,7 +152,7 @@ export function ThreadProvider({ children }: { children: ReactNode }) {
     try {
       const thread = await client.threads.create({
         metadata: {
-          supabase_user_id: user.id,
+          user_id: user.id,
           customModelName: modelName,
           modelConfig: {
             ...modelConfig,
@@ -200,7 +200,7 @@ export function ThreadProvider({ children }: { children: ReactNode }) {
 
       const userThreads = await client.threads.search({
         metadata: {
-          supabase_user_id: user.id,
+          user_id: user.id,
         },
         limit: 100,
       });

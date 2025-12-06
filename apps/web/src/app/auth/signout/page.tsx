@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { createSupabaseClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 
 export default function Page() {
@@ -10,16 +9,17 @@ export default function Page() {
 
   useEffect(() => {
     async function signOut() {
-      const client = createSupabaseClient();
-      const { error } = await client.auth.signOut();
-      if (error) {
-        setErrorOccurred(true);
-      } else {
+      try {
+        // Clear the auth token cookie
+        await fetch("/api/auth/signout", { method: "POST" });
         router.push("/auth/login");
+      } catch (error) {
+        console.error("Sign out error:", error);
+        setErrorOccurred(true);
       }
     }
     signOut();
-  }, []);
+  }, [router]);
 
   return (
     <>

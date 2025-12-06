@@ -1,16 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { Client } from "@langchain/langgraph-sdk";
 import { LANGGRAPH_API_URL } from "@/constants";
-import { verifyUserAuthenticated } from "../../../../../lib/supabase/verify_user_server";
+import { cookies } from "next/headers";
 
 export async function POST(req: NextRequest) {
-  try {
-    const authRes = await verifyUserAuthenticated();
-    if (!authRes?.user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-  } catch (e) {
-    console.error("Failed to fetch user", e);
+  const cookieStore = await cookies();
+  const token = cookieStore.get('auth_token')?.value;
+  
+  if (!token) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 

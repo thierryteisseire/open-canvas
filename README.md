@@ -96,9 +96,9 @@ After this, navigate to the `Authentication` page, and the `Providers` tab. Make
 
 To verify authentication works, run `yarn dev` and visit [localhost:3000](http://localhost:3000). This should redirect you to the [login page](http://localhost:3000/auth/login). From here, you can either login with Google or GitHub, or if you did not configure these providers, navigate to the [signup page](http://localhost:3000/auth/signup) and create a new account with an email and password. This should then redirect you to a conformation page, and after confirming your email you should be redirected to the [home page](http://localhost:3000).
 
-### Setup LangGraph Server
+### Running Open Canvas
 
-The first step to running Open Canvas locally is to build the application. This is because Open Canvas uses a monorepo setup, and requires workspace dependencies to be build so other packages/apps can access them.
+The first step to running Open Canvas locally is to build the application. This is because Open Canvas uses a monorepo setup, and requires workspace dependencies to be built so other packages/apps can access them.
 
 Run the following command from the root of the repository:
 
@@ -106,25 +106,32 @@ Run the following command from the root of the repository:
 yarn build
 ```
 
-Now we'll cover how to setup and run the LangGraph server locally.
-
-Navigate to `apps/agents` and run `yarn dev` (this runs `npx @langchain/langgraph-cli dev --port 54367`).
-
-```
-Ready!
-- 🚀 API: http://localhost:54367
-- 🎨 Studio UI: https://smith.langchain.com/studio?baseUrl=http://localhost:54367
-```
-
-After your LangGraph server is running, execute the following command inside `apps/web` to start the Open Canvas frontend:
+Now you can start both the LangGraph server and Next.js frontend with a single command:
 
 ```bash
 yarn dev
 ```
 
-On initial load, compilation may take a little bit of time.
+This will automatically start:
+- 🚀 **LangGraph API** at http://localhost:54367
+- 🎨 **LangGraph Studio** at https://smith.langchain.com/studio?baseUrl=http://localhost:54367
+- 🌐 **Next.js App** at http://localhost:3000
 
-Then, open [localhost:3000](http://localhost:3000) with your browser and start interacting!
+On initial load, compilation may take a little bit of time. Once ready, open [localhost:3000](http://localhost:3000) with your browser and start interacting!
+
+#### Running services separately (optional)
+
+If you prefer to run the services separately:
+
+```bash
+# Terminal 1 - LangGraph server
+cd apps/agents
+yarn dev
+
+# Terminal 2 - Next.js frontend
+cd apps/web
+yarn dev
+```
 
 ## LLM Models
 

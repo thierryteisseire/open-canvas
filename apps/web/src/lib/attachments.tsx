@@ -4,7 +4,6 @@ import { useToast } from "@/hooks/use-toast";
 import { ContextDocument } from "@opencanvas/shared/types";
 import { FFmpeg } from "@ffmpeg/ffmpeg";
 import { toBlobURL } from "@ffmpeg/util";
-import { createClient } from "@supabase/supabase-js";
 
 export function arrayToFileList(files: File[] | undefined) {
   if (!files || !files.length) return undefined;

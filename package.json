@@ -6,7 +6,9 @@
   "private": true,
   "workspaces": ["apps/*", "packages/*"],
   "scripts": {
+    "dev": "node scripts/dev.js",
     "build": "turbo build",
+    "models": "node scripts/list-openai-models.js",
     "turbo:command": "turbo",
     "format": "turbo format",
     "format:check": "turbo format:check",

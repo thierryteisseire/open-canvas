@@ -1,5 +1,4 @@
-import { createSupabaseClient } from "@/lib/supabase/client";
-import { User } from "@supabase/supabase-js";
+import { getCurrentUser } from "@/lib/api/token";
 import {
   createContext,
   ReactNode,
@@ -7,6 +6,12 @@ import {
   useEffect,
   useState,
 } from "react";
+
+export interface User {
+  id: string;
+  email: string;
+  name?: string;
+}
 
 type UserContentType = {
   getUser: () => Promise<User | undefined>;
@@ -32,14 +37,17 @@ export function UserProvider({ children }: { children: ReactNode }) {
       return user;
     }
 
-    const supabase = createSupabaseClient();
-
-    const {
-      data: { user: supabaseUser },
-    } = await supabase.auth.getUser();
-    setUser(supabaseUser || undefined);
-    setLoading(false);
-    return supabaseUser || undefined;
+    try {
+      const currentUser = await getCurrentUser();
+      setUser(currentUser || undefined);
+      setLoading(false);
+      return currentUser || undefined;
+    } catch (error) {
+      console.error('Failed to get user:', error);
+      setUser(undefined);
+      setLoading(false);
+      return undefined;
+    }
   }
 
   const contextValue: UserContentType = {

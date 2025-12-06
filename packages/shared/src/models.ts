@@ -25,15 +25,15 @@ const AZURE_MODELS: ModelConfigurationParams[] = [
 
 const OPENAI_MODELS: ModelConfigurationParams[] = [
   {
-    name: "gpt-4.1",
-    label: "GPT 4.1",
+    name: "gpt-5.1",
+    label: "GPT 5.1",
     config: {
       provider: "openai",
       temperatureRange: {
         min: 0,
-        max: 1,
-        default: 0.5,
-        current: 0.5,
+        max: 2,
+        default: 1,
+        current: 1,
       },
       maxTokens: {
         min: 1,
@@ -43,6 +43,146 @@ const OPENAI_MODELS: ModelConfigurationParams[] = [
       },
     },
     isNew: true,
+  },
+  {
+    name: "gpt-5",
+    label: "GPT 5",
+    config: {
+      provider: "openai",
+      temperatureRange: {
+        min: 0,
+        max: 2,
+        default: 1,
+        current: 1,
+      },
+      maxTokens: {
+        min: 1,
+        max: 32_768,
+        default: 4_096,
+        current: 4_096,
+      },
+    },
+    isNew: true,
+  },
+  {
+    name: "gpt-5-mini",
+    label: "GPT 5 mini",
+    config: {
+      provider: "openai",
+      temperatureRange: {
+        min: 0,
+        max: 2,
+        default: 1,
+        current: 1,
+      },
+      maxTokens: {
+        min: 1,
+        max: 32_768,
+        default: 4_096,
+        current: 4_096,
+      },
+    },
+    isNew: true,
+  },
+  {
+    name: "o3",
+    label: "o3",
+    config: {
+      provider: "openai",
+      temperatureRange: {
+        min: 0,
+        max: 1,
+        default: 1,
+        current: 1,
+      },
+      maxTokens: {
+        min: 1,
+        max: 100_000,
+        default: 16_000,
+        current: 16_000,
+      },
+    },
+    isNew: true,
+  },
+  {
+    name: "o3-mini",
+    label: "o3 mini",
+    config: {
+      provider: "openai",
+      temperatureRange: {
+        min: 0,
+        max: 1,
+        default: 1,
+        current: 1,
+      },
+      maxTokens: {
+        min: 1,
+        max: 100_000,
+        default: 16_000,
+        current: 16_000,
+      },
+    },
+    isNew: true,
+  },
+  {
+    name: "o1-pro",
+    label: "o1 Pro",
+    config: {
+      provider: "openai",
+      temperatureRange: {
+        min: 0,
+        max: 1,
+        default: 1,
+        current: 1,
+      },
+      maxTokens: {
+        min: 1,
+        max: 100_000,
+        default: 16_000,
+        current: 16_000,
+      },
+    },
+    isNew: true,
+  },
+  {
+    name: "o1",
+    label: "o1",
+    config: {
+      provider: "openai",
+      temperatureRange: {
+        min: 0,
+        max: 1,
+        default: 1,
+        current: 1,
+      },
+      maxTokens: {
+        min: 1,
+        max: 100_000,
+        default: 16_000,
+        current: 16_000,
+      },
+    },
+    isNew: false,
+  },
+  {
+    name: "gpt-4.1",
+    label: "GPT 4.1",
+    config: {
+      provider: "openai",
+      temperatureRange: {
+        min: 0,
+        max: 2,
+        default: 1,
+        current: 1,
+      },
+      maxTokens: {
+        min: 1,
+        max: 32_768,
+        default: 4_096,
+        current: 4_096,
+      },
+    },
+    isNew: false,
   },
   {
     name: "gpt-4.1-mini",
@@ -51,9 +191,9 @@ const OPENAI_MODELS: ModelConfigurationParams[] = [
       provider: "openai",
       temperatureRange: {
         min: 0,
-        max: 1,
-        default: 0.5,
-        current: 0.5,
+        max: 2,
+        default: 1,
+        current: 1,
       },
       maxTokens: {
         min: 1,
@@ -62,27 +202,7 @@ const OPENAI_MODELS: ModelConfigurationParams[] = [
         current: 4_096,
       },
     },
-    isNew: true,
-  },
-  {
-    name: "o4-mini",
-    label: "o4 mini",
-    config: {
-      provider: "openai",
-      temperatureRange: {
-        min: 0,
-        max: 1,
-        default: 0.5,
-        current: 0.5,
-      },
-      maxTokens: {
-        min: 1,
-        max: 100_000,
-        default: 4_096,
-        current: 4_096,
-      },
-    },
-    isNew: true,
+    isNew: false,
   },
   {
     name: "gpt-4o",
@@ -91,9 +211,9 @@ const OPENAI_MODELS: ModelConfigurationParams[] = [
       provider: "openai",
       temperatureRange: {
         min: 0,
-        max: 1,
-        default: 0.5,
-        current: 0.5,
+        max: 2,
+        default: 1,
+        current: 1,
       },
       maxTokens: {
         min: 1,
@@ -111,9 +231,9 @@ const OPENAI_MODELS: ModelConfigurationParams[] = [
       provider: "openai",
       temperatureRange: {
         min: 0,
-        max: 1,
-        default: 0.5,
-        current: 0.5,
+        max: 2,
+        default: 1,
+        current: 1,
       },
       maxTokens: {
         min: 1,
@@ -125,79 +245,19 @@ const OPENAI_MODELS: ModelConfigurationParams[] = [
     isNew: false,
   },
   {
-    name: "gpt-4.5-preview",
-    label: "GPT 4.5",
+    name: "chatgpt-4o-latest",
+    label: "ChatGPT 4o (Latest)",
     config: {
       provider: "openai",
       temperatureRange: {
         min: 0,
-        max: 1,
-        default: 0.5,
-        current: 0.5,
+        max: 2,
+        default: 1,
+        current: 1,
       },
       maxTokens: {
         min: 1,
         max: 16_384,
-        default: 4_096,
-        current: 4_096,
-      },
-    },
-    isNew: false,
-  },
-  {
-    name: "o3-mini",
-    label: "o3 mini",
-    config: {
-      provider: "openai",
-      temperatureRange: {
-        min: 0,
-        max: 1,
-        default: 0.5,
-        current: 0.5,
-      },
-      maxTokens: {
-        min: 1,
-        max: 100_000,
-        default: 4_096,
-        current: 4_096,
-      },
-    },
-    isNew: false,
-  },
-  {
-    name: "o1-mini",
-    label: "o1 mini",
-    config: {
-      provider: "openai",
-      temperatureRange: {
-        min: 0,
-        max: 1,
-        default: 0.5,
-        current: 0.5,
-      },
-      maxTokens: {
-        min: 1,
-        max: 65_536,
-        default: 4_096,
-        current: 4_096,
-      },
-    },
-    isNew: false,
-  },
-  {
-    name: "o1",
-    label: "o1",
-    config: {
-      provider: "openai",
-      temperatureRange: {
-        min: 0,
-        max: 1,
-        default: 0.5,
-        current: 0.5,
-      },
-      maxTokens: {
-        min: 1,
-        max: 100_000,
         default: 4_096,
         current: 4_096,
       },
@@ -564,25 +624,36 @@ const GEMINI_MODELS: ModelConfigurationParams[] = [
   },
 ];
 
+// Models restricted to LangChain users in hosted version
+// For self-hosted deployments, you can remove models from this list
 export const LANGCHAIN_USER_ONLY_MODELS = [
-  "o1",
-  "gpt-4o",
-  "gpt-4.5-preview",
-  "claude-3-5-sonnet-latest",
-  "claude-3-7-sonnet-latest",
-  "gemini-2.0-flash-thinking-exp-01-21",
-  "gemini-2.5-pro-preview-05-06",
-  "claude-sonnet-4-0",
-  "claude-opus-4-0",
-  "gpt-4.1",
+  // Uncomment to restrict premium models:
+  // "o1",
+  // "o1-pro",
+  // "o3",
+  // "gpt-5.1",
+  // "gpt-5",
+  // "claude-sonnet-4-0",
+  // "claude-opus-4-0",
 ];
 
 // Models which do NOT support the temperature parameter.
 export const TEMPERATURE_EXCLUDED_MODELS = [
-  "o1-mini",
-  "o3-mini",
   "o1",
-  "o4-mini",
+  "o1-pro",
+  "o3",
+  "o3-mini",
+];
+
+// Models which require max_completion_tokens instead of maxTokens
+export const MAX_COMPLETION_TOKENS_MODELS = [
+  "o1",
+  "o1-pro",
+  "o3",
+  "o3-mini",
+  "gpt-5",
+  "gpt-5.1",
+  "gpt-5-mini",
 ];
 
 // Models which do NOT stream back tool calls.
@@ -631,9 +702,9 @@ export type ALL_MODEL_NAMES =
   | OLLAMA_MODEL_NAMES
   | GROQ_MODEL_NAMES;
 
-export const DEFAULT_MODEL_NAME: ALL_MODEL_NAMES = OPENAI_MODELS[1].name;
+export const DEFAULT_MODEL_NAME: ALL_MODEL_NAMES = OPENAI_MODELS[10].name; // gpt-4o-mini
 export const DEFAULT_MODEL_CONFIG: CustomModelConfig = {
-  ...OPENAI_MODELS[1].config,
-  temperatureRange: { ...OPENAI_MODELS[1].config.temperatureRange },
-  maxTokens: { ...OPENAI_MODELS[1].config.maxTokens },
+  ...OPENAI_MODELS[10].config,
+  temperatureRange: { ...OPENAI_MODELS[10].config.temperatureRange },
+  maxTokens: { ...OPENAI_MODELS[10].config.maxTokens },
 };

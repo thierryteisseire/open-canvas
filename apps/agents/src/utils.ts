@@ -25,8 +25,9 @@ import {
 import {
   TEMPERATURE_EXCLUDED_MODELS,
   LANGCHAIN_USER_ONLY_MODELS,
+  MAX_COMPLETION_TOKENS_MODELS,
 } from "@opencanvas/shared/models";
-import { createClient, Session, User } from "@supabase/supabase-js";
+// Removed Supabase imports - auth disabled
 
 export const formatReflections = (
   reflections: Reflections,
@@ -308,29 +309,13 @@ export function optionallyGetSystemPromptFromConfig(
 }
 
 async function getUserFromConfig(
-  config: LangGraphRunnableConfig
-): Promise<User | undefined> {
-  if (
-    !process.env.NEXT_PUBLIC_SUPABASE_URL ||
-    !process.env.SUPABASE_SERVICE_ROLE
-  ) {
-    return undefined;
-  }
-
-  const accessToken = (
-    config.configurable?.supabase_session as Session | undefined
-  )?.access_token;
-  if (!accessToken) {
-    return undefined;
-  }
-
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL,
-    process.env.SUPABASE_SERVICE_ROLE
-  );
-
-  const authRes = await supabase.auth.getUser(accessToken);
-  return authRes.data.user || undefined;
+  _config: LangGraphRunnableConfig
+): Promise<{ id: string; email?: string } | undefined> {
+  // No auth mode - return mock user
+  return {
+    id: "anonymous-user",
+    email: "anonymous@opencanvas.local",
+  };
 }
 
 export function isUsingO1MiniModel(config: LangGraphRunnableConfig) {
@@ -382,12 +367,19 @@ export async function getModelFromConfig(
   const includeStandardParams = !TEMPERATURE_EXCLUDED_MODELS.some(
     (m) => m === modelName
   );
+  
+  const useMaxCompletionTokens = MAX_COMPLETION_TOKENS_MODELS.some(
+    (m) => m === modelName
+  );
 
   return await initChatModel(modelName, {
     modelProvider,
-    // Certain models (e.g., OpenAI o1) do not support passing the temperature param.
+    // Certain models (e.g., OpenAI o1, GPT-5) do not support passing the temperature param.
+    // Some models require max_completion_tokens instead of maxTokens
     ...(includeStandardParams
-      ? { maxTokens, temperature }
+      ? useMaxCompletionTokens
+        ? { max_completion_tokens: maxTokens, temperature }
+        : { maxTokens, temperature }
       : {
           max_completion_tokens: maxTokens,
           // streaming: false,

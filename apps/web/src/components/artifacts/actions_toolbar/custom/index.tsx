@@ -22,7 +22,7 @@ import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import { TighterText } from "@/components/ui/header";
 import { GraphInput } from "@opencanvas/shared/types";
-import { User } from "@supabase/supabase-js";
+import { User } from "@/contexts/UserContext";
 
 export interface CustomQuickActionsProps {
   isTextSelected: boolean;

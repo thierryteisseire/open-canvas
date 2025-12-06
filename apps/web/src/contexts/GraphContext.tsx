@@ -156,9 +156,12 @@ export function GraphProvider({ children }: { children: ReactNode }) {
       !assistantsData.selectedAssistant &&
       !assistantsData.isLoadingAllAssistants
     ) {
+      console.log("Getting or creating assistant for user:", userData.user.id);
       assistantsData.getOrCreateAssistant(userData.user.id);
+    } else if (assistantsData.selectedAssistant) {
+      console.log("Assistant already selected:", assistantsData.selectedAssistant.assistant_id);
     }
-  }, [userData.user]);
+  }, [userData.user, assistantsData.selectedAssistant, assistantsData.isLoadingAllAssistants, assistantsData.getOrCreateAssistant]);
 
   // Very hacky way of ensuring updateState is not called when a thread is switched
   useEffect(() => {

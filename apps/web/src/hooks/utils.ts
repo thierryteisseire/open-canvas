@@ -1,8 +1,8 @@
 import { Client } from "@langchain/langgraph-sdk";
+import { LANGGRAPH_API_URL } from "@/constants";
 
 export const createClient = () => {
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3000/api";
   return new Client({
-    apiUrl,
+    apiUrl: LANGGRAPH_API_URL,
   });
 };

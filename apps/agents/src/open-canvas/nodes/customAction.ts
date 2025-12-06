@@ -49,7 +49,7 @@ export const customAction = async (
 
   const store = ensureStoreInConfig(config);
   const assistantId = config.configurable?.assistant_id;
-  const userId = config.configurable?.supabase_user_id;
+  const userId = config.configurable?.user_id;
   if (!assistantId) {
     throw new Error("`assistant_id` not found in configurable");
   }

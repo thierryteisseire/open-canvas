@@ -1,7 +1,6 @@
 import { LANGGRAPH_API_URL } from "../../../constants";
 import { NextRequest, NextResponse } from "next/server";
-import { Session, User } from "@supabase/supabase-js";
-import { verifyUserAuthenticated } from "../../../lib/supabase/verify_user_server";
+import { cookies } from "next/headers";
 
 function getCorsHeaders() {
   return {
@@ -12,17 +11,22 @@ function getCorsHeaders() {
 }
 
 async function handleRequest(req: NextRequest, method: string) {
-  let session: Session | undefined;
-  let user: User | undefined;
+  // Get auth token from cookie
+  const cookieStore = await cookies();
+  const token = cookieStore.get('auth_token')?.value;
+  
+  if (!token) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  // Decode JWT to get user ID (simple base64 decode of payload)
+  let userId: string;
   try {
-    const authRes = await verifyUserAuthenticated();
-    session = authRes?.session;
-    user = authRes?.user;
-    if (!session || !user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const payload = token.split('.')[1];
+    const decoded = JSON.parse(Buffer.from(payload, 'base64').toString());
+    userId = decoded.sub || decoded.user_id || decoded.id;
   } catch (e) {
-    console.error("Failed to fetch user", e);
+    console.error("Failed to decode token", e);
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -55,8 +59,7 @@ async function handleRequest(req: NextRequest, method: string) {
         parsedBody.config = parsedBody.config || {};
         parsedBody.config.configurable = {
           ...parsedBody.config.configurable,
-          supabase_session: session,
-          supabase_user_id: user.id,
+          user_id: userId,
         };
         options.body = JSON.stringify(parsedBody);
       } else {
