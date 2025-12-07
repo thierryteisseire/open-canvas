@@ -35,7 +35,13 @@ export function CanvasComponent() {
   const { graphData } = useGraphContext();
   const { setModelName, setModelConfig, threadId, setThreadId } =
     useThreadContext();
-  const { setArtifact, chatStarted, setChatStarted, clearState } = graphData;
+  const {
+    setArtifact,
+    chatStarted,
+    setChatStarted,
+    clearState,
+    switchSelectedThread,
+  } = graphData;
   const { toast } = useToast();
   const [isEditing, setIsEditing] = useState(false);
   const [webSearchResultsOpen, setWebSearchResultsOpen] = useState(false);
@@ -66,6 +72,9 @@ export function CanvasComponent() {
   };
 
   const handleSwitchThread = (thread: ThreadType) => {
+    // Call the GraphContext function to load thread messages and artifacts
+    switchSelectedThread(thread);
+
     // Chat should only be "started" if there are messages present
     if ((thread.values as Record<string, any>)?.messages?.length) {
       setChatStarted(true);
