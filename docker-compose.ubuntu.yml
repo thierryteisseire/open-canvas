@@ -1,0 +1,125 @@
+version: '3.8'
+
+services:
+  # LangGraph Agents Backend
+  agents:
+    build:
+      context: .
+      dockerfile: Dockerfile.agents.ubuntu
+    container_name: gutenberg-agents
+    ports:
+      - "54367:54367"
+    environment:
+      # LangSmith tracing (optional)
+      - LANGSMITH_TRACING=${LANGSMITH_TRACING:-false}
+      - LANGSMITH_API_KEY=${LANGSMITH_API_KEY:-}
+      
+      # LLM API Keys
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - FIREWORKS_API_KEY=${FIREWORKS_API_KEY:-}
+      - GOOGLE_API_KEY=${GOOGLE_API_KEY:-}
+      - GROQ_API_KEY=${GROQ_API_KEY:-}
+      - FIRECRAWL_API_KEY=${FIRECRAWL_API_KEY:-}
+      
+      # Azure OpenAI (optional)
+      - _AZURE_OPENAI_API_KEY=${_AZURE_OPENAI_API_KEY:-}
+      - _AZURE_OPENAI_API_INSTANCE_NAME=${_AZURE_OPENAI_API_INSTANCE_NAME:-}
+      - _AZURE_OPENAI_API_DEPLOYMENT_NAME=${_AZURE_OPENAI_API_DEPLOYMENT_NAME:-}
+      - _AZURE_OPENAI_API_VERSION=${_AZURE_OPENAI_API_VERSION:-2024-08-01-preview}
+      - _AZURE_OPENAI_API_BASE_PATH=${_AZURE_OPENAI_API_BASE_PATH:-}
+      
+      # Ollama (optional) - Ubuntu uses localhost instead of host.docker.internal
+      - OLLAMA_API_URL=${OLLAMA_API_URL:-http://172.17.0.1:11434}
+    volumes:
+      # Persist LangGraph data
+      - langgraph-data:/app/.langgraph_api
+    networks:
+      - gutenberg-network
+    restart: unless-stopped
+    # Ubuntu-specific: Add resource limits for production
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 4G
+        reservations:
+          cpus: '1'
+          memory: 2G
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:54367/ok"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    # Ubuntu-specific: Logging configuration
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # Next.js Web Frontend
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile.web.ubuntu
+    container_name: gutenberg-web
+    ports:
+      - "3000:3000"
+    environment:
+      # Feature flags
+      - NEXT_PUBLIC_FIREWORKS_ENABLED=${NEXT_PUBLIC_FIREWORKS_ENABLED:-true}
+      - NEXT_PUBLIC_GEMINI_ENABLED=${NEXT_PUBLIC_GEMINI_ENABLED:-true}
+      - NEXT_PUBLIC_ANTHROPIC_ENABLED=${NEXT_PUBLIC_ANTHROPIC_ENABLED:-true}
+      - NEXT_PUBLIC_OPENAI_ENABLED=${NEXT_PUBLIC_OPENAI_ENABLED:-true}
+      - NEXT_PUBLIC_AZURE_ENABLED=${NEXT_PUBLIC_AZURE_ENABLED:-false}
+      - NEXT_PUBLIC_OLLAMA_ENABLED=${NEXT_PUBLIC_OLLAMA_ENABLED:-false}
+      - NEXT_PUBLIC_GROQ_ENABLED=${NEXT_PUBLIC_GROQ_ENABLED:-false}
+      
+      # Custom Auth API
+      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-https://epsimo-api.alphaforh.com}
+      
+      # LangGraph API URL (points to agents service)
+      - NEXT_PUBLIC_LANGGRAPH_API_URL=http://agents:54367
+      
+      # Optional services
+      - GROQ_API_KEY=${GROQ_API_KEY:-}
+      - FIRECRAWL_API_KEY=${FIRECRAWL_API_KEY:-}
+      - OLLAMA_API_URL=${OLLAMA_API_URL:-http://172.17.0.1:11434}
+    depends_on:
+      agents:
+        condition: service_healthy
+    networks:
+      - gutenberg-network
+    restart: unless-stopped
+    # Ubuntu-specific: Add resource limits for production
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    # Ubuntu-specific: Logging configuration
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+networks:
+  gutenberg-network:
+    driver: bridge
+
+volumes:
+  langgraph-data:
+    driver: local
+

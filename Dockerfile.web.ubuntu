@@ -1,0 +1,71 @@
+# Dockerfile for Next.js Web Frontend - Ubuntu optimized
+FROM node:20-alpine AS base
+
+# Install dependencies only when needed
+FROM base AS deps
+
+# Ubuntu fix: Configure DNS and add retries for package installation
+RUN echo "nameserver 8.8.8.8" > /etc/resolv.conf && \
+    echo "nameserver 8.8.4.4" >> /etc/resolv.conf
+
+# Retry logic for apk with multiple mirrors
+RUN for i in 1 2 3 4 5; do \
+        apk add --no-cache libc6-compat python3 make g++ && break || \
+        (echo "Retry $i failed, waiting..." && sleep 5); \
+    done
+
+WORKDIR /app
+
+# Copy root package files
+COPY package.json yarn.lock turbo.json ./
+
+# Copy workspace package files
+COPY apps/web/package.json ./apps/web/
+COPY packages/shared/package.json ./packages/shared/
+
+# Install dependencies (ignore scripts to prevent postinstall from running)
+RUN yarn install --frozen-lockfile --ignore-scripts --network-timeout 100000
+
+# Build stage
+FROM base AS builder
+WORKDIR /app
+
+# Copy dependencies
+COPY --from=deps /app/node_modules ./node_modules
+COPY --from=deps /app/apps/web/node_modules ./apps/web/node_modules
+COPY --from=deps /app/packages/shared/node_modules ./packages/shared/node_modules
+
+# Copy source code
+COPY turbo.json ./
+COPY package.json yarn.lock ./
+COPY apps/web ./apps/web
+COPY packages/shared ./packages/shared
+
+# Build shared package first, then web
+RUN yarn turbo build --filter=@opencanvas/shared
+RUN yarn turbo build --filter=@opencanvas/web
+
+# Production stage
+FROM base AS runner
+WORKDIR /app
+
+ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
+
+RUN addgroup --system --gid 1001 nodejs
+RUN adduser --system --uid 1001 nextjs
+
+# Copy built application
+COPY --from=builder /app/apps/web/public ./apps/web/public
+COPY --from=builder --chown=nextjs:nodejs /app/apps/web/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /app/apps/web/.next/static ./apps/web/.next/static
+
+USER nextjs
+
+EXPOSE 3000
+
+ENV PORT=3000
+ENV HOSTNAME="0.0.0.0"
+
+# Start Next.js
+CMD ["node", "apps/web/server.js"]

@@ -1,0 +1,82 @@
+# Dockerfile for LangGraph Agents Backend - Ubuntu optimized
+FROM node:20-alpine AS base
+
+# Install dependencies only when needed
+FROM base AS deps
+
+# Ubuntu fix: Configure DNS and add retries for package installation
+RUN echo "nameserver 8.8.8.8" > /etc/resolv.conf && \
+    echo "nameserver 8.8.4.4" >> /etc/resolv.conf
+
+# Retry logic for apk with multiple mirrors
+RUN for i in 1 2 3 4 5; do \
+        apk add --no-cache libc6-compat python3 make g++ && break || \
+        (echo "Retry $i failed, waiting..." && sleep 5); \
+    done
+
+WORKDIR /app
+
+# Copy root package files
+COPY package.json yarn.lock turbo.json ./
+
+# Copy workspace package files
+COPY apps/agents/package.json ./apps/agents/
+COPY packages/shared/package.json ./packages/shared/
+
+# Install dependencies (ignore scripts to prevent postinstall from running)
+RUN yarn install --frozen-lockfile --ignore-scripts --network-timeout 100000
+
+# Build stage
+FROM base AS builder
+WORKDIR /app
+
+# Copy dependencies
+COPY --from=deps /app/node_modules ./node_modules
+COPY --from=deps /app/apps/agents/node_modules ./apps/agents/node_modules
+COPY --from=deps /app/packages/shared/node_modules ./packages/shared/node_modules
+
+# Copy source code
+COPY turbo.json ./
+COPY package.json yarn.lock ./
+COPY apps/agents ./apps/agents
+COPY packages/shared ./packages/shared
+
+# Build shared package first, then agents
+RUN yarn turbo build --filter=@opencanvas/shared
+RUN yarn turbo build --filter=@opencanvas/agents
+
+# Production stage
+FROM base AS runner
+WORKDIR /app
+
+ENV NODE_ENV=production
+
+# Ubuntu fix: Configure DNS
+RUN echo "nameserver 8.8.8.8" > /etc/resolv.conf && \
+    echo "nameserver 8.8.4.4" >> /etc/resolv.conf
+
+# Install only production dependencies with retry
+RUN for i in 1 2 3 4 5; do \
+        apk add --no-cache libc6-compat && break || \
+        (echo "Retry $i failed, waiting..." && sleep 5); \
+    done
+
+# Copy built artifacts and necessary files
+COPY --from=builder /app/apps/agents/dist ./apps/agents/dist
+COPY --from=builder /app/apps/agents/src ./apps/agents/src
+COPY --from=builder /app/apps/agents/package.json ./apps/agents/
+COPY --from=builder /app/packages/shared/dist ./packages/shared/dist
+COPY --from=builder /app/packages/shared/src ./packages/shared/src
+COPY --from=builder /app/packages/shared/package.json ./packages/shared/
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/package.json ./package.json
+COPY --from=builder /app/yarn.lock ./yarn.lock
+COPY langgraph.json ./
+
+EXPOSE 54367
+
+# Create empty .env file to prevent LangGraph CLI error
+RUN touch .env
+
+# Start LangGraph server
+CMD ["npx", "@langchain/langgraph-cli", "dev", "--port", "54367", "--host", "0.0.0.0"]
