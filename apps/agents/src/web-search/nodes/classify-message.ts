@@ -1,4 +1,5 @@
 import { ChatAnthropic } from "@langchain/anthropic";
+import { ChatOpenAI } from "@langchain/openai";
 import { WebSearchState } from "../state.js";
 import z from "zod";
 
@@ -24,12 +25,22 @@ const classificationSchema = z
 export async function classifyMessage(
   state: WebSearchState
 ): Promise<Partial<WebSearchState>> {
-  const model = new ChatAnthropic({
-    model: "claude-3-5-sonnet-latest",
-    temperature: 0,
-  }).withStructuredOutput(classificationSchema, {
-    name: "classify_message",
-  });
+  // Use OpenAI if Anthropic key is not available
+  const useOpenAI = !process.env.ANTHROPIC_API_KEY && process.env.OPENAI_API_KEY;
+  
+  const model = useOpenAI
+    ? new ChatOpenAI({
+        model: "gpt-4o-mini",
+        temperature: 0,
+      }).withStructuredOutput(classificationSchema, {
+        name: "classify_message",
+      })
+    : new ChatAnthropic({
+        model: "claude-3-5-sonnet-latest",
+        temperature: 0,
+      }).withStructuredOutput(classificationSchema, {
+        name: "classify_message",
+      });
 
   const latestMessageContent = state.messages[state.messages.length - 1]
     .content as string;
