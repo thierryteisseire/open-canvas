@@ -3,7 +3,7 @@ import { useToast } from "@/hooks/use-toast";
 import { ProgrammingLanguageOptions } from "@opencanvas/shared/types";
 import { ThreadPrimitive } from "@assistant-ui/react";
 import { Thread as ThreadType } from "@langchain/langgraph-sdk";
-import { ArrowDownIcon, PanelRightOpen, SquarePen } from "lucide-react";
+import { ArrowDownIcon, PanelRightOpen, SquarePen, LogOut } from "lucide-react";
 import { Dispatch, FC, SetStateAction } from "react";
 import { ReflectionsDialog } from "../reflections-dialog/ReflectionsDialog";
 import { useLangSmithLinkToolUI } from "../tool-hooks/LangSmithLinkToolUI";
@@ -12,11 +12,11 @@ import { TighterText } from "../ui/header";
 import { Composer } from "./composer";
 import { AssistantMessage, UserMessage } from "./messages";
 import ModelSelector from "./model-selector";
-import { ThreadHistory } from "./thread-history";
 import { ThreadWelcome } from "./welcome";
 import { useUserContext } from "@/contexts/UserContext";
 import { useThreadContext } from "@/contexts/ThreadProvider";
 import { useAssistantContext } from "@/contexts/AssistantContext";
+import { useRouter } from "next/navigation";
 
 const ThreadScrollToBottom: FC = () => {
   return (
@@ -66,9 +66,25 @@ export const Thread: FC<ThreadProps> = (props: ThreadProps) => {
     setThreadId,
   } = useThreadContext();
   const { user } = useUserContext();
+  const router = useRouter();
 
   // Render the LangSmith trace link
   useLangSmithLinkToolUI();
+
+  const handleLogout = async () => {
+    try {
+      await fetch("/api/auth/signout", { method: "POST" });
+      router.push("/auth/login");
+    } catch (error) {
+      console.error("Logout error:", error);
+      toast({
+        title: "Logout failed",
+        description: "An error occurred while logging out",
+        duration: 5000,
+        variant: "destructive",
+      });
+    }
+  };
 
   const handleNewSession = async () => {
     if (!user) {
@@ -94,10 +110,7 @@ export const Thread: FC<ThreadProps> = (props: ThreadProps) => {
     <ThreadPrimitive.Root className="flex flex-col h-full w-full">
       <div className="pr-3 pl-6 pt-3 pb-2 flex flex-row gap-4 items-center justify-between">
         <div className="flex items-center justify-start gap-2 text-gray-600">
-          <ThreadHistory
-            switchSelectedThreadCallback={switchSelectedThreadCallback}
-          />
-          <TighterText className="text-xl">Open Canvas</TighterText>
+          <TighterText className="text-xl">Gutenberg AI</TighterText>
           {!hasChatStarted && (
             <ModelSelector
               modelName={modelName}
@@ -128,10 +141,28 @@ export const Thread: FC<ThreadProps> = (props: ThreadProps) => {
             >
               <SquarePen className="text-gray-600" />
             </TooltipIconButton>
+            <TooltipIconButton
+              tooltip="Logout"
+              variant="ghost"
+              className="w-8 h-8"
+              delayDuration={400}
+              onClick={handleLogout}
+            >
+              <LogOut className="w-4 h-4 text-gray-600" />
+            </TooltipIconButton>
           </div>
         ) : (
           <div className="flex flex-row gap-2 items-center">
             <ReflectionsDialog selectedAssistant={selectedAssistant} />
+            <TooltipIconButton
+              tooltip="Logout"
+              variant="ghost"
+              className="w-8 h-8"
+              delayDuration={400}
+              onClick={handleLogout}
+            >
+              <LogOut className="w-4 h-4 text-gray-600" />
+            </TooltipIconButton>
           </div>
         )}
       </div>

@@ -63,10 +63,10 @@ export function Signup() {
             src="/lc_logo.jpg"
             width={36}
             height={36}
-            alt="LangChain Logo"
+            alt="Gutenberg AI Logo"
             className="rounded-full"
           />
-          Open Canvas
+          Gutenberg AI
         </div>
       </div>
       <div className="lg:p-8">

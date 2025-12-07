@@ -3,8 +3,9 @@ import { ArtifactTitle } from "./artifact-title";
 import { NavigateArtifactHistory } from "./navigate-artifact-history";
 import { ArtifactCodeV3, ArtifactMarkdownV3 } from "@opencanvas/shared/types";
 import { Assistant } from "@langchain/langgraph-sdk";
-import { PanelRightClose } from "lucide-react";
+import { PanelRightClose, LogOut } from "lucide-react";
 import { TooltipIconButton } from "@/components/ui/assistant-ui/tooltip-icon-button";
+import { useRouter } from "next/navigation";
 
 interface ArtifactHeaderProps {
   isBackwardsDisabled: boolean;
@@ -20,6 +21,17 @@ interface ArtifactHeaderProps {
 }
 
 export function ArtifactHeader(props: ArtifactHeaderProps) {
+  const router = useRouter();
+
+  const handleLogout = async () => {
+    try {
+      await fetch("/api/auth/signout", { method: "POST" });
+      router.push("/auth/login");
+    } catch (error) {
+      console.error("Logout error:", error);
+    }
+  };
+
   return (
     <div className="flex flex-row items-center justify-between">
       <div className="flex flex-row items-center justify-center gap-2">
@@ -49,6 +61,15 @@ export function ArtifactHeader(props: ArtifactHeaderProps) {
           totalArtifactVersions={props.totalArtifactVersions}
         />
         <ReflectionsDialog selectedAssistant={props.selectedAssistant} />
+        <TooltipIconButton
+          tooltip="Logout"
+          variant="ghost"
+          className="w-8 h-8"
+          delayDuration={400}
+          onClick={handleLogout}
+        >
+          <LogOut className="w-4 h-4 text-gray-600" />
+        </TooltipIconButton>
       </div>
     </div>
   );
