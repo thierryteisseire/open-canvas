@@ -47,9 +47,9 @@ WORKDIR /app
 
 ENV NODE_ENV=production
 
-# Install only production dependencies with retry
+# Install only production dependencies with retry (including wget for healthcheck)
 RUN for i in 1 2 3 4 5; do \
-        apk add --no-cache libc6-compat && break || \
+        apk add --no-cache libc6-compat wget && break || \
         (echo "Retry $i/$5 failed, waiting..." && sleep 10); \
     done || (echo "Failed after 5 retries. Check DNS configuration." && exit 1)
 
