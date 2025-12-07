@@ -406,19 +406,25 @@ const cleanBase64 = (base64String: string): string => {
 
 export async function convertPDFToText(base64PDF: string) {
   try {
+    console.log(`[PDF] Starting PDF conversion, base64 length: ${base64PDF.length}`);
+    
     // Clean the base64 input first
     const cleanedBase64 = cleanBase64(base64PDF);
+    console.log(`[PDF] Cleaned base64 length: ${cleanedBase64.length}`);
 
     // Convert cleaned base64 to buffer
     const pdfBuffer = Buffer.from(cleanedBase64, "base64");
+    console.log(`[PDF] PDF buffer size: ${pdfBuffer.length} bytes`);
 
     // Parse PDF
     const data = await pdfParse(pdfBuffer);
+    console.log(`[PDF] Successfully parsed PDF, extracted ${data.text.length} characters`);
+    console.log(`[PDF] First 200 chars: ${data.text.substring(0, 200)}`);
 
     // Get text content
     return data.text;
   } catch (error) {
-    console.error("Error converting PDF to text:", error);
+    console.error("[PDF] Error converting PDF to text:", error);
     throw error;
   }
 }

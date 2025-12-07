@@ -91,9 +91,11 @@ export function ContentComposerChatInterfaceComponent(
 
     const contentDocuments: ContextDocument[] = [];
     if (message.attachments) {
+      console.log(`[Frontend] Processing ${message.attachments.length} attachment(s)`);
       const files = message.attachments
         .map((a) => a.file)
         .filter((f): f is File => f != null);
+      console.log(`[Frontend] Found ${files.length} file(s):`, files.map(f => ({ name: f.name, type: f.type, size: f.size })));
       const fileList = arrayToFileList(files);
       if (fileList) {
         const documentsResult = await convertDocuments({
@@ -103,11 +105,13 @@ export function ContentComposerChatInterfaceComponent(
           userId: userData.user.id,
           toast,
         });
+        console.log(`[Frontend] Converted ${documentsResult.length} document(s):`, documentsResult.map(d => ({ name: d.name, type: d.type, dataLength: d.data.length })));
         contentDocuments.push(...documentsResult);
       }
     }
 
     try {
+      console.log(`[Frontend] Creating message with ${contentDocuments.length} document(s)`);
       const humanMessage = new HumanMessage({
         content: message.content[0].text,
         id: uuidv4(),
@@ -115,6 +119,7 @@ export function ContentComposerChatInterfaceComponent(
           documents: contentDocuments,
         },
       });
+      console.log(`[Frontend] Message created with additional_kwargs:`, humanMessage.additional_kwargs);
 
       setMessages((prevMessages) => [...prevMessages, humanMessage]);
 
