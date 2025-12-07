@@ -123,17 +123,11 @@ export function ContentComposerChatInterfaceComponent(
 
       setMessages((prevMessages) => [...prevMessages, humanMessage]);
 
-      // Convert to a serializable format that preserves additional_kwargs
-      const messageForAPI = {
-        role: "user",
-        content: message.content[0].text,
-        additional_kwargs: {
-          documents: contentDocuments,
-        },
-      };
+      const convertedMessage = convertToOpenAIFormat(humanMessage);
+      console.log(`[Frontend] Converted message:`, convertedMessage);
 
       await streamMessage({
-        messages: [messageForAPI],
+        messages: [convertedMessage],
       });
     } finally {
       setIsRunning(false);
