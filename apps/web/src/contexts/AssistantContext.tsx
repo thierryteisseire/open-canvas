@@ -136,6 +136,9 @@ export function AssistantProvider({ children }: { children: ReactNode }) {
         },
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
+        name: "Default Assistant",
+        version: 1,
+        context: {},
       };
       setAssistants([defaultAssistant]);
       setSelectedAssistant(defaultAssistant);
@@ -355,6 +358,9 @@ export function AssistantProvider({ children }: { children: ReactNode }) {
         },
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
+        name: "Default Assistant",
+        version: 1,
+        context: {},
       };
       console.log("Setting default assistant:", defaultAssistant);
       setAssistants([defaultAssistant]);

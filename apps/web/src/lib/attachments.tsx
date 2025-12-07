@@ -55,38 +55,16 @@ export function contextDocumentToFile(document: ContextDocument): File {
 }
 
 export async function transcribeAudio(file: File, userId: string) {
-  if (
-    !process.env.NEXT_PUBLIC_SUPABASE_URL_DOCUMENTS ||
-    !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY_DOCUMENTS
-  ) {
-    throw new Error(
-      "Supabase credentials for uploading context documents are missing"
-    );
-  }
-  const client = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL_DOCUMENTS,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY_DOCUMENTS
-  );
-
-  const res = await client.storage
-    .from("documents")
-    .upload(
-      `${userId}/${new Date().getTime()}-${file.name.replaceAll("/", "-").replaceAll(" ", "-")}`,
-      file,
-      {
-        upsert: true,
-      }
-    );
-  if (res.error) {
-    throw new Error(`Failed to upload context document: ${res.error.message}`);
-  }
+  // Upload audio file directly for transcription (no Supabase needed)
+  const formData = new FormData();
+  formData.append("file", file);
+  formData.append("userId", userId);
 
   const result = await fetch("/api/whisper/audio", {
     method: "POST",
-    body: JSON.stringify({
-      path: res.data.path,
-    }),
+    body: formData,
   });
+  
   if (!result.ok) {
     throw new Error("Failed to transcribe audio");
   }

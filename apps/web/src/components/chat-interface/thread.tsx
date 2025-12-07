@@ -50,7 +50,7 @@ export const Thread: FC<ThreadProps> = (props: ThreadProps) => {
     setChatStarted,
     hasChatStarted,
     handleQuickStart,
-    switchSelectedThreadCallback,
+    switchSelectedThreadCallback: _switchSelectedThreadCallback,
   } = props;
   const { toast } = useToast();
   const {

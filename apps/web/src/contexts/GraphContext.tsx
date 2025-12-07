@@ -497,6 +497,7 @@ export function GraphProvider({ children }: { children: ReactNode }) {
                 if (result === "continue") {
                   continue;
                 } else if (typeof result === "object") {
+                  console.log(`[GraphContext] Setting artifact from generateArtifact:`, result);
                   if (!firstTokenReceived) {
                     setFirstTokenReceived(true);
                   }
@@ -1225,6 +1226,7 @@ export function GraphProvider({ children }: { children: ReactNode }) {
               if (result && result === "continue") {
                 continue;
               } else if (result && typeof result === "object") {
+                console.log(`[GraphContext] Setting artifact from generateArtifact (non-streaming):`, result);
                 setFirstTokenReceived(true);
                 setArtifact(result);
               }

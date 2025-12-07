@@ -29,10 +29,13 @@ export async function generatePath(
 ): Promise<OpenCanvasGraphReturnType> {
   const { _messages } = state;
   const newMessages: BaseMessage[] = [];
-  const docMessage = await convertContextDocumentToHumanMessage(
+  const messagesToReplace: BaseMessage[] = [];
+  
+  const { contextMessage, cleanedLastMessage } = await convertContextDocumentToHumanMessage(
     _messages,
     config
   );
+  
   const existingDocMessage = newMessages.find(
     (m) =>
       Array.isArray(m.content) &&
@@ -41,8 +44,12 @@ export async function generatePath(
       )
   );
 
-  if (docMessage) {
-    newMessages.push(docMessage);
+  if (contextMessage) {
+    newMessages.push(contextMessage);
+    // If we have a cleaned message, we'll replace the original in the message list
+    if (cleanedLastMessage) {
+      messagesToReplace.push(cleanedLastMessage);
+    }
   } else if (existingDocMessage) {
     const fixedMessages = await fixMisFormattedContextDocMessage(
       existingDocMessage,
@@ -128,15 +135,24 @@ export async function generatePath(
   }
 
   // Update the internal message list with the new message, if one was generated
-  const newInternalMessageList = updatedMessageWithContents
-    ? state._messages.map((m) => {
-        if (m.id === updatedMessageWithContents.id) {
-          return updatedMessageWithContents;
-        } else {
-          return m;
-        }
-      })
-    : state._messages;
+  // Also replace any messages that had documents with cleaned versions
+  let newInternalMessageList = state._messages;
+  
+  if (updatedMessageWithContents) {
+    newInternalMessageList = newInternalMessageList.map((m) => {
+      if (m.id === updatedMessageWithContents.id) {
+        return updatedMessageWithContents;
+      }
+      return m;
+    });
+  }
+  
+  if (messagesToReplace.length > 0) {
+    newInternalMessageList = newInternalMessageList.map((m) => {
+      const replacement = messagesToReplace.find((r) => r.id === m.id);
+      return replacement || m;
+    });
+  }
 
   const routingResult = await dynamicDeterminePath({
     state: {

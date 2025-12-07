@@ -16,18 +16,24 @@ import { OC_HIDE_FROM_UI_KEY } from "@opencanvas/shared/constants";
 /**
  * Checks for context documents in a human message, and if found, converts
  * them to a human message with the proper content format.
+ * 
+ * Returns both the converted message and a cleaned version of the original message
+ * (with documents removed to prevent serialization issues).
  */
 export async function convertContextDocumentToHumanMessage(
   messages: BaseMessage[],
   config: LangGraphRunnableConfig
-): Promise<HumanMessage | undefined> {
+): Promise<{
+  contextMessage: HumanMessage | undefined;
+  cleanedLastMessage: BaseMessage | undefined;
+}> {
   const lastMessage = messages[messages.length - 1];
   const documents = lastMessage?.additional_kwargs?.documents as
     | ContextDocument[]
     | undefined;
   
   if (!documents?.length) {
-    return undefined;
+    return { contextMessage: undefined, cleanedLastMessage: undefined };
   }
 
   console.log(`[Documents] Processing ${documents.length} document(s):`, documents.map(d => ({ name: d.name, type: d.type })));
@@ -39,7 +45,7 @@ export async function convertContextDocumentToHumanMessage(
   
   console.log(`[Documents] Created ${contextMessages.length} context message(s)`);
   
-  return new HumanMessage({
+  const contextMessage = new HumanMessage({
     id: uuidv4(),
     content: [
       ...contextMessages.flatMap((m) =>
@@ -50,6 +56,23 @@ export async function convertContextDocumentToHumanMessage(
       [OC_HIDE_FROM_UI_KEY]: true,
     },
   });
+
+  // Create a cleaned version of the last message without the document data
+  // to prevent serialization issues
+  const cleanedLastMessage = new HumanMessage({
+    ...lastMessage,
+    additional_kwargs: {
+      ...lastMessage.additional_kwargs,
+      // Keep document metadata but remove the actual data
+      documents: documents.map(d => ({
+        name: d.name,
+        type: d.type,
+        data: `[Document content processed - ${d.data.length} chars]`
+      }))
+    }
+  });
+
+  return { contextMessage, cleanedLastMessage };
 }
 
 export async function fixMisFormattedContextDocMessage(

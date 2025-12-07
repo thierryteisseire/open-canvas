@@ -56,8 +56,10 @@ export const reflect = async (
         model: "gpt-4o",
         temperature: 0,
       }).bindTools([generateReflectionTool], {
-        tool_choice: "required",
-        tool_choice_name: "generate_reflections",
+        tool_choice: {
+          type: "function",
+          function: { name: "generate_reflections" }
+        },
       })
     : new ChatAnthropic({
         model: "claude-3-5-sonnet-20240620",

@@ -125,10 +125,13 @@ export function ContentComposerChatInterfaceComponent(
 
       const convertedMessage = convertToOpenAIFormat(humanMessage);
       console.log(`[Frontend] Converted message:`, convertedMessage);
+      console.log(`[Frontend] Starting stream...`);
 
       await streamMessage({
         messages: [convertedMessage],
       });
+      
+      console.log(`[Frontend] Stream completed`);
     } finally {
       setIsRunning(false);
       // Re-fetch threads so that the current thread's title is updated.

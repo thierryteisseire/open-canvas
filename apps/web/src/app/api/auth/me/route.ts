@@ -3,7 +3,7 @@ import { cookies } from 'next/headers';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://epsimo-api.alphaforh.com';
 
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   const cookieStore = await cookies();
   const token = cookieStore.get('auth_token')?.value;
 
