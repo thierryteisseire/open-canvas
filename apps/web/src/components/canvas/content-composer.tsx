@@ -124,7 +124,7 @@ export function ContentComposerChatInterfaceComponent(
       setMessages((prevMessages) => [...prevMessages, humanMessage]);
 
       await streamMessage({
-        messages: [convertToOpenAIFormat(humanMessage)],
+        messages: [humanMessage],
       });
     } finally {
       setIsRunning(false);
