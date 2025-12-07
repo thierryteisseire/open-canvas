@@ -34,10 +34,22 @@ export function UserAuthForm({
 
   async function onSubmit(event: React.SyntheticEvent) {
     event.preventDefault();
+    console.log('[CLIENT] Login form submitted');
+    console.log('[CLIENT] Email:', email);
+    console.log('[CLIENT] Password length:', password.length);
+    
     setEmailPasswordIsLoading(true);
 
-    await onLoginWithEmail({ email, password });
-    setEmailPasswordIsLoading(false);
+    try {
+      console.log('[CLIENT] Calling onLoginWithEmail...');
+      await onLoginWithEmail({ email, password });
+      console.log('[CLIENT] onLoginWithEmail completed');
+    } catch (error) {
+      console.error('[CLIENT] Login error caught:', error);
+    } finally {
+      setEmailPasswordIsLoading(false);
+      console.log('[CLIENT] Loading state reset');
+    }
   }
 
   return (
