@@ -521,6 +521,29 @@ const GROQ_MODELS: ModelConfigurationParams[] = [
   },
 ];
 
+const SCALEWAY_MODELS: ModelConfigurationParams[] = [
+  {
+    name: "scaleway/qwen3-coder-30b",
+    label: "Qwen 3 Coder 30B (Scaleway)",
+    config: {
+      provider: "scaleway",
+      temperatureRange: {
+        min: 0,
+        max: 1,
+        default: 0.7,
+        current: 0.7,
+      },
+      maxTokens: {
+        min: 1,
+        max: 4_096,
+        default: 512,
+        current: 512,
+      },
+    },
+    isNew: true,
+  },
+];
+
 const GEMINI_MODELS: ModelConfigurationParams[] = [
   {
     name: "gemini-2.5-flash-preview-05-20",
@@ -684,6 +707,7 @@ export const ALL_MODELS: ModelConfigurationParams[] = [
   ...AZURE_MODELS,
   ...OLLAMA_MODELS,
   ...GROQ_MODELS,
+  ...SCALEWAY_MODELS,
 ];
 
 type OPENAI_MODEL_NAMES = (typeof OPENAI_MODELS)[number]["name"];
@@ -693,6 +717,7 @@ type GEMINI_MODEL_NAMES = (typeof GEMINI_MODELS)[number]["name"];
 type AZURE_MODEL_NAMES = (typeof AZURE_MODELS)[number]["name"];
 type OLLAMA_MODEL_NAMES = (typeof OLLAMA_MODELS)[number]["name"];
 type GROQ_MODEL_NAMES = (typeof GROQ_MODELS)[number]["name"];
+type SCALEWAY_MODEL_NAMES = (typeof SCALEWAY_MODELS)[number]["name"];
 export type ALL_MODEL_NAMES =
   | OPENAI_MODEL_NAMES
   | ANTHROPIC_MODEL_NAMES
@@ -700,7 +725,8 @@ export type ALL_MODEL_NAMES =
   | GEMINI_MODEL_NAMES
   | AZURE_MODEL_NAMES
   | OLLAMA_MODEL_NAMES
-  | GROQ_MODEL_NAMES;
+  | GROQ_MODEL_NAMES
+  | SCALEWAY_MODEL_NAMES;
 
 export const DEFAULT_MODEL_NAME: ALL_MODEL_NAMES = OPENAI_MODELS[10].name; // gpt-4o-mini
 export const DEFAULT_MODEL_CONFIG: CustomModelConfig = {

@@ -188,6 +188,13 @@ export default function ModelSelector({
       return false;
     }
 
+    if (
+      model.name.includes("scaleway/") &&
+      process.env.NEXT_PUBLIC_SCALEWAY_ENABLED === "false"
+    ) {
+      return false;
+    }
+
     // By default, return true if the environment variable is not set or is set to true
     return true;
   });

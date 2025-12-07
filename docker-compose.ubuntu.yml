@@ -31,6 +31,10 @@ services:
       
       # Ollama (optional) - Ubuntu uses localhost instead of host.docker.internal
       - OLLAMA_API_URL=${OLLAMA_API_URL:-http://172.17.0.1:11434}
+      
+      # Scaleway (optional) - Custom LLM provider
+      - SCALEWAY_API_KEY=${SCALEWAY_API_KEY:-}
+      - SCALEWAY_BASE_URL=${SCALEWAY_BASE_URL:-https://eb5c2023-a9e4-4f41-a890-88e9b72baede.ifr.fr-par.scaleway.com/v1}
     volumes:
       # Persist LangGraph data
       - langgraph-data:/app/.langgraph_api
@@ -76,6 +80,7 @@ services:
       - NEXT_PUBLIC_AZURE_ENABLED=${NEXT_PUBLIC_AZURE_ENABLED:-false}
       - NEXT_PUBLIC_OLLAMA_ENABLED=${NEXT_PUBLIC_OLLAMA_ENABLED:-false}
       - NEXT_PUBLIC_GROQ_ENABLED=${NEXT_PUBLIC_GROQ_ENABLED:-false}
+      - NEXT_PUBLIC_SCALEWAY_ENABLED=${NEXT_PUBLIC_SCALEWAY_ENABLED:-false}
       
       # Custom Auth API
       - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-https://epsimo-api.alphaforh.com}

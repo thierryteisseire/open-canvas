@@ -299,6 +299,16 @@ export const getModelConfig = (
     };
   }
 
+  if (customModelName.startsWith("scaleway/")) {
+    const actualModelName = "qwen/qwen3-coder-30b-a3b-instruct:fp8";
+    return {
+      modelName: actualModelName,
+      modelProvider: "openai", // Scaleway uses OpenAI-compatible API
+      apiKey: process.env.SCALEWAY_API_KEY,
+      baseUrl: process.env.SCALEWAY_BASE_URL || "https://eb5c2023-a9e4-4f41-a890-88e9b72baede.ifr.fr-par.scaleway.com/v1",
+    };
+  }
+
   throw new Error("Unknown model provider");
 };
 
