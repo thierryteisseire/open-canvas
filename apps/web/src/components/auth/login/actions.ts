@@ -105,6 +105,12 @@ export async function login(input: LoginWithEmailInput) {
     revalidatePath("/", "layout");
     redirect("/");
   } catch (error) {
+    // NEXT_REDIRECT is not an error - it's how Next.js handles redirects in server actions
+    if (error instanceof Error && error.message === 'NEXT_REDIRECT') {
+      console.log('[LOGIN] Redirect successful (NEXT_REDIRECT is expected)');
+      throw error; // Re-throw to let Next.js handle the redirect
+    }
+    
     console.error('[LOGIN] Caught exception:', error);
     console.error('[LOGIN] Error type:', error?.constructor?.name);
     console.error('[LOGIN] Error message:', error instanceof Error ? error.message : String(error));
