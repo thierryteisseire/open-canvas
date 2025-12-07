@@ -28,7 +28,15 @@ export const createClient = () => {
   // Use relative URL for client-side requests (browser)
   // This ensures requests go through Next.js API proxy at /api/[...path]
   const isClient = typeof window !== "undefined";
-  const apiUrl = isClient ? "/api" : LANGGRAPH_API_URL;
+  
+  let apiUrl: string;
+  if (isClient) {
+    // In browser: construct full URL using current origin + /api
+    apiUrl = `${window.location.origin}/api`;
+  } else {
+    // On server: use environment variable (e.g., http://agents:54367)
+    apiUrl = LANGGRAPH_API_URL;
+  }
   
   return new Client({
     apiUrl,
@@ -45,7 +53,7 @@ Browser → http://localhost:54367/threads/search ❌ FAILS
 
 ### Request Flow (After Fix)
 ```
-Browser → /api/threads/search → Next.js API Proxy → http://agents:54367/threads/search ✅ SUCCESS
+Browser → https://canvas.gutenbergai.app/api/threads/search → Next.js API Proxy → http://agents:54367/threads/search ✅ SUCCESS
 ```
 
 The Next.js API proxy at `/api/[..._path]/route.ts`:
