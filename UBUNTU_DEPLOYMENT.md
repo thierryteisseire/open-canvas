@@ -130,6 +130,23 @@ curl http://localhost:3000/api/health
 # http://your-server-ip:3000
 ```
 
+## Rebuilding After Updates
+
+If you pull new code changes from Git:
+
+```bash
+# Pull latest changes
+git pull origin gutenbergai
+
+# Rebuild containers
+./docker-rebuild-ubuntu.sh
+
+# Or manually:
+docker compose -f docker-compose.ubuntu.yml down
+docker compose -f docker-compose.ubuntu.yml build --no-cache
+docker compose -f docker-compose.ubuntu.yml up -d
+```
+
 ## Troubleshooting
 
 ### DNS Errors During Build
