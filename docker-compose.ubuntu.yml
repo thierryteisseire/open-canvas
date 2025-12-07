@@ -68,6 +68,16 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.web.ubuntu
+      args:
+        - NEXT_PUBLIC_FIREWORKS_ENABLED=${NEXT_PUBLIC_FIREWORKS_ENABLED:-true}
+        - NEXT_PUBLIC_GEMINI_ENABLED=${NEXT_PUBLIC_GEMINI_ENABLED:-true}
+        - NEXT_PUBLIC_ANTHROPIC_ENABLED=${NEXT_PUBLIC_ANTHROPIC_ENABLED:-true}
+        - NEXT_PUBLIC_OPENAI_ENABLED=${NEXT_PUBLIC_OPENAI_ENABLED:-true}
+        - NEXT_PUBLIC_AZURE_ENABLED=${NEXT_PUBLIC_AZURE_ENABLED:-false}
+        - NEXT_PUBLIC_OLLAMA_ENABLED=${NEXT_PUBLIC_OLLAMA_ENABLED:-false}
+        - NEXT_PUBLIC_GROQ_ENABLED=${NEXT_PUBLIC_GROQ_ENABLED:-false}
+        - NEXT_PUBLIC_SCALEWAY_ENABLED=${NEXT_PUBLIC_SCALEWAY_ENABLED:-true}
+        - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-https://epsimo-api.alphaforh.com}
     container_name: gutenberg-web
     ports:
       - "3001:3000"
