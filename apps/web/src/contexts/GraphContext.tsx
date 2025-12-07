@@ -358,6 +358,7 @@ export function GraphProvider({ children }: { children: ReactNode }) {
         input,
         modelName: threadData.modelName,
         modelConfigs: threadData.modelConfigs,
+        apiUrl: `${window.location.origin}/api`,
       });
 
       // Variables to keep track of content specific to this stream

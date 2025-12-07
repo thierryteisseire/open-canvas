@@ -1,4 +1,4 @@
-import { createClient } from "@/hooks/utils";
+import { Client } from "@langchain/langgraph-sdk";
 import { StreamConfig } from "./streamWorker.types";
 
 // Since workers can't directly access the client SDK, you'll need to recreate/import necessary parts
@@ -6,10 +6,11 @@ const ctx: Worker = self as any;
 
 ctx.addEventListener("message", async (event: MessageEvent<StreamConfig>) => {
   try {
-    const { threadId, assistantId, input, modelName, modelConfigs } =
+    const { threadId, assistantId, input, modelName, modelConfigs, apiUrl } =
       event.data;
 
-    const client = createClient();
+    // Create client directly with the provided API URL
+    const client = new Client({ apiUrl });
 
     const stream = client.runs.stream(threadId, assistantId, {
       input: input as Record<string, unknown>,
