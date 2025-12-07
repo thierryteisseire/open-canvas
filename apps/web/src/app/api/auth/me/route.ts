@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://epsimo-api.alphaforh.com';
+
 export async function GET(request: NextRequest) {
   const cookieStore = await cookies();
   const token = cookieStore.get('auth_token')?.value;
@@ -10,19 +12,31 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    // Decode JWT to get user info
-    const payload = token.split('.')[1];
-    const decoded = JSON.parse(Buffer.from(payload, 'base64').toString());
-    
-    const user = {
-      id: decoded.user_id || decoded.sub || decoded.id,
-      email: decoded.email || 'user@example.com', // JWT doesn't contain email
-      name: decoded.name || 'User',
-    };
+    // Fetch user data from the API
+    const response = await fetch(`${API_BASE_URL}/auth/me`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
 
-    return NextResponse.json({ user });
+    if (!response.ok) {
+      // Fallback to decoding JWT if API call fails
+      const payload = token.split('.')[1];
+      const decoded = JSON.parse(Buffer.from(payload, 'base64').toString());
+      
+      const user = {
+        id: decoded.user_id || decoded.sub || decoded.id,
+        email: decoded.email || 'user@example.com',
+        name: decoded.name || 'User',
+      };
+
+      return NextResponse.json({ user });
+    }
+
+    const data = await response.json();
+    return NextResponse.json({ user: data.user });
   } catch (error) {
-    console.error('Failed to decode token:', error);
-    return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
+    console.error('Failed to get user:', error);
+    return NextResponse.json({ error: 'Failed to get user' }, { status: 500 });
   }
 }

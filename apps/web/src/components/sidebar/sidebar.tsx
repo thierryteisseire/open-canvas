@@ -10,9 +10,18 @@ import { useUserContext } from "@/contexts/UserContext";
 import { useToast } from "@/hooks/use-toast";
 import { Thread } from "@langchain/langgraph-sdk";
 import { isToday, isYesterday, isWithinInterval, subDays } from "date-fns";
-import { LogOut, MessageSquarePlus, Trash2, Menu, X } from "lucide-react";
+import {
+  LogOut,
+  MessageSquarePlus,
+  Trash2,
+  Menu,
+  X,
+  PanelLeftClose,
+  PanelLeft,
+} from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { SettingsDialog } from "./settings-dialog";
 
 interface ThreadItemProps {
   id: string;
@@ -82,6 +91,7 @@ export function Sidebar({
   const { deleteThread, getUserThreads, userThreads, isUserThreadsLoading } =
     useThreadContext();
   const [isMobileOpen, setIsMobileOpen] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(false);
 
   useEffect(() => {
     if (typeof window === "undefined" || userThreads.length || !user) return;
@@ -163,9 +173,11 @@ export function Sidebar({
       {/* Header */}
       <div className="p-3 border-b border-gray-700">
         <div className="flex items-center justify-between mb-3">
-          <TighterText className="text-xl font-semibold">
-            Gutenberg AI
-          </TighterText>
+          {!isCollapsed && (
+            <TighterText className="text-xl font-semibold">
+              Gutenberg AI
+            </TighterText>
+          )}
           <button
             onClick={() => setIsMobileOpen(false)}
             className="lg:hidden p-1 hover:bg-gray-800 rounded"
@@ -179,80 +191,98 @@ export function Sidebar({
           size="sm"
         >
           <MessageSquarePlus className="w-4 h-4 mr-2" />
-          New Chat
+          {!isCollapsed && "New Chat"}
         </Button>
       </div>
 
       {/* Thread List */}
-      <div className="flex-1 overflow-y-auto px-3 py-4 space-y-4">
-        {isUserThreadsLoading && !userThreads.length ? (
-          <div className="space-y-2">
-            {Array.from({ length: 10 }).map((_, i) => (
-              <LoadingThread key={`loading-thread-${i}`} />
-            ))}
-          </div>
-        ) : !userThreads.length ? (
-          <p className="text-gray-400 text-sm text-center py-4">
-            No conversations yet
-          </p>
-        ) : (
-          Object.entries(groupedThreads).map(([group, threads]) =>
-            threads.length > 0 ? (
-              <div key={group}>
-                <TighterText className="text-xs font-medium text-gray-400 mb-2 px-2">
-                  {prettifyDateLabel(group)}
-                </TighterText>
-                <div className="space-y-1">
-                  {threads
-                    .sort(
-                      (a, b) =>
-                        new Date(b.created_at).getTime() -
-                        new Date(a.created_at).getTime()
-                    )
-                    .map((thread) => (
-                      <ThreadItem
-                        key={thread.thread_id}
-                        id={thread.thread_id}
-                        label={
-                          thread.metadata?.thread_title ??
-                          ((thread.values as Record<string, any>)?.messages?.[0]
-                            ?.content ||
-                            "Untitled")
-                        }
-                        isActive={currentThreadId === thread.thread_id}
-                        onClick={() => {
-                          switchSelectedThreadCallback(thread);
-                          setIsMobileOpen(false);
-                        }}
-                        onDelete={() => handleDeleteThread(thread.thread_id)}
-                      />
-                    ))}
+      {!isCollapsed && (
+        <div className="flex-1 overflow-y-auto px-3 py-4 space-y-4">
+          {isUserThreadsLoading && !userThreads.length ? (
+            <div className="space-y-2">
+              {Array.from({ length: 10 }).map((_, i) => (
+                <LoadingThread key={`loading-thread-${i}`} />
+              ))}
+            </div>
+          ) : !userThreads.length ? (
+            <p className="text-gray-400 text-sm text-center py-4">
+              No conversations yet
+            </p>
+          ) : (
+            Object.entries(groupedThreads).map(([group, threads]) =>
+              threads.length > 0 ? (
+                <div key={group}>
+                  <TighterText className="text-xs font-medium text-gray-400 mb-2 px-2">
+                    {prettifyDateLabel(group)}
+                  </TighterText>
+                  <div className="space-y-1">
+                    {threads
+                      .sort(
+                        (a, b) =>
+                          new Date(b.created_at).getTime() -
+                          new Date(a.created_at).getTime()
+                      )
+                      .map((thread) => (
+                        <ThreadItem
+                          key={thread.thread_id}
+                          id={thread.thread_id}
+                          label={
+                            thread.metadata?.thread_title ??
+                            ((thread.values as Record<string, any>)
+                              ?.messages?.[0]?.content ||
+                              "Untitled")
+                          }
+                          isActive={currentThreadId === thread.thread_id}
+                          onClick={() => {
+                            switchSelectedThreadCallback(thread);
+                            setIsMobileOpen(false);
+                          }}
+                          onDelete={() => handleDeleteThread(thread.thread_id)}
+                        />
+                      ))}
+                  </div>
                 </div>
-              </div>
-            ) : null
-          )
-        )}
-      </div>
+              ) : null
+            )
+          )}
+        </div>
+      )}
 
       {/* Footer */}
-      <div className="p-3 border-t border-gray-700">
+      <div className="p-3 border-t border-gray-700 space-y-2">
+        {/* Settings */}
+        {!isCollapsed && <SettingsDialog user={user} />}
+        
+        {/* User Info & Logout */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2 min-w-0">
-            <div className="w-8 h-8 rounded-full bg-gray-700 flex items-center justify-center flex-shrink-0">
-              <span className="text-sm font-medium">
-                {user?.email?.[0]?.toUpperCase() || "U"}
+            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center flex-shrink-0">
+              <span className="text-sm font-semibold text-white">
+                {user?.name?.[0]?.toUpperCase() || user?.email?.[0]?.toUpperCase() || "U"}
               </span>
             </div>
-            <span className="text-sm truncate">{user?.email || "User"}</span>
+            {!isCollapsed && (
+              <div className="flex flex-col min-w-0">
+                <span className="text-sm font-medium truncate">
+                  {user?.name || "User"}
+                </span>
+                <span className="text-xs text-gray-400 truncate">
+                  {user?.email || ""}
+                </span>
+              </div>
+            )}
           </div>
-          <TooltipIconButton
-            tooltip="Logout"
-            variant="ghost"
-            className="text-gray-400 hover:text-white hover:bg-gray-800"
-            onClick={handleLogout}
-          >
-            <LogOut className="w-4 h-4" />
-          </TooltipIconButton>
+          <div className="flex items-center gap-1">
+            {isCollapsed && <SettingsDialog user={user} isCollapsed />}
+            <TooltipIconButton
+              tooltip="Logout"
+              variant="ghost"
+              className="text-gray-400 hover:text-white hover:bg-gray-800"
+              onClick={handleLogout}
+            >
+              <LogOut className="w-4 h-4" />
+            </TooltipIconButton>
+          </div>
         </div>
       </div>
     </div>
@@ -268,6 +298,22 @@ export function Sidebar({
         <Menu className="w-5 h-5" />
       </button>
 
+      {/* Desktop Collapse/Expand Button */}
+      <button
+        onClick={() => setIsCollapsed(!isCollapsed)}
+        className="hidden lg:block fixed top-4 left-4 z-40 p-2 bg-gray-800 text-white rounded-lg hover:bg-gray-700 transition-all"
+        style={{
+          left: isCollapsed ? "4.5rem" : "16.5rem",
+          transition: "left 0.3s ease-in-out",
+        }}
+      >
+        {isCollapsed ? (
+          <PanelLeft className="w-5 h-5" />
+        ) : (
+          <PanelLeftClose className="w-5 h-5" />
+        )}
+      </button>
+
       {/* Mobile Overlay */}
       {isMobileOpen && (
         <div
@@ -277,7 +323,11 @@ export function Sidebar({
       )}
 
       {/* Sidebar - Desktop */}
-      <div className="hidden lg:block w-64 h-screen flex-shrink-0">
+      <div
+        className={`hidden lg:block h-screen flex-shrink-0 transition-all duration-300 ease-in-out ${
+          isCollapsed ? "w-20" : "w-64"
+        }`}
+      >
         {sidebarContent}
       </div>
 
