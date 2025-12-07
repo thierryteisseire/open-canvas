@@ -25,14 +25,20 @@ export async function convertContextDocumentToHumanMessage(
   const documents = lastMessage?.additional_kwargs?.documents as
     | ContextDocument[]
     | undefined;
+  
   if (!documents?.length) {
     return undefined;
   }
+
+  console.log(`[Documents] Processing ${documents.length} document(s):`, documents.map(d => ({ name: d.name, type: d.type })));
 
   const contextMessages = await createContextDocumentMessages(
     config,
     documents
   );
+  
+  console.log(`[Documents] Created ${contextMessages.length} context message(s)`);
+  
   return new HumanMessage({
     id: uuidv4(),
     content: [

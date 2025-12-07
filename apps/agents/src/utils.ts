@@ -488,12 +488,17 @@ export async function createContextDocumentMessagesOpenAI(
     let text = "";
 
     if (doc.type === "application/pdf") {
+      console.log(`[Documents] Converting PDF: ${doc.name}`);
       text = await convertPDFToText(doc.data);
     } else if (doc.type.startsWith("text/")) {
+      console.log(`[Documents] Decoding text file: ${doc.name} (${doc.type})`);
       text = atob(cleanBase64(doc.data));
     } else if (doc.type === "text") {
+      console.log(`[Documents] Using text content: ${doc.name}`);
       text = doc.data;
     }
+
+    console.log(`[Documents] Processed ${doc.name}: ${text.length} characters`);
 
     return {
       type: "text",
