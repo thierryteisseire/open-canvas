@@ -214,7 +214,7 @@ export function CanvasComponent() {
               <ResizableHandle />
               <ResizablePanel
                 defaultSize={chatCollapsed ? 100 : 75}
-                maxSize={85}
+                maxSize={chatCollapsed ? 100 : 85}
                 minSize={50}
                 id="canvas-panel"
                 order={2}
