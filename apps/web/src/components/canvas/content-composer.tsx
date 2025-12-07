@@ -123,8 +123,17 @@ export function ContentComposerChatInterfaceComponent(
 
       setMessages((prevMessages) => [...prevMessages, humanMessage]);
 
+      // Convert to a serializable format that preserves additional_kwargs
+      const messageForAPI = {
+        role: "user",
+        content: message.content[0].text,
+        additional_kwargs: {
+          documents: contentDocuments,
+        },
+      };
+
       await streamMessage({
-        messages: [humanMessage],
+        messages: [messageForAPI],
       });
     } finally {
       setIsRunning(false);
