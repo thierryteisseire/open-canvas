@@ -6,9 +6,19 @@ import { cookies } from "next/headers";
 import { LoginWithEmailInput } from "./Login";
 
 export async function login(input: LoginWithEmailInput) {
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://epsimo-api.alphaforh.com';
+  const loginEndpoint = `${apiUrl}/auth/login`;
+  
+  console.log('[LOGIN] Starting login attempt');
+  console.log('[LOGIN] API URL:', apiUrl);
+  console.log('[LOGIN] Login endpoint:', loginEndpoint);
+  console.log('[LOGIN] Email:', input.email);
+  
   try {
+    console.log('[LOGIN] Sending POST request to auth API...');
+    
     // Call the custom auth API
-    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://epsimo-api.alphaforh.com'}/auth/login`, {
+    const response = await fetch(loginEndpoint, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -19,9 +29,21 @@ export async function login(input: LoginWithEmailInput) {
       }),
     });
 
+    console.log('[LOGIN] Response status:', response.status);
+    console.log('[LOGIN] Response headers:', Object.fromEntries(response.headers.entries()));
+
     if (!response.ok) {
-      const error = await response.json().catch(() => ({ message: 'Login failed' }));
-      console.error('Login error:', response.status, error);
+      const errorText = await response.text();
+      console.error('[LOGIN] Error response body:', errorText);
+      
+      let error;
+      try {
+        error = JSON.parse(errorText);
+      } catch {
+        error = { message: 'Login failed' };
+      }
+      
+      console.error('[LOGIN] Parsed error:', error);
       
       // Provide specific error messages based on status code
       let errorMessage = 'An error occurred during login';
@@ -40,16 +62,32 @@ export async function login(input: LoginWithEmailInput) {
         errorMessage = error.message;
       }
       
+      console.error('[LOGIN] Final error message:', errorMessage);
       redirect(`/auth/login?error=${encodeURIComponent(errorMessage)}`);
     }
 
-    const data = await response.json();
+    const responseText = await response.text();
+    console.log('[LOGIN] Success response body:', responseText);
+    
+    let data;
+    try {
+      data = JSON.parse(responseText);
+    } catch (e) {
+      console.error('[LOGIN] Failed to parse response as JSON:', e);
+      redirect("/auth/login?error=Invalid response from authentication service");
+    }
+    
+    console.log('[LOGIN] Parsed response data:', { ...data, jwt_token: data.jwt_token ? '[REDACTED]' : undefined });
+    
     const token = data.jwt_token || data.token;
 
     if (!token) {
-      console.error('No token in response');
+      console.error('[LOGIN] No token in response. Response keys:', Object.keys(data));
       redirect("/auth/login?error=No authentication token received");
     }
+
+    console.log('[LOGIN] Token received, length:', token.length);
+    console.log('[LOGIN] Setting auth cookie...');
 
     // Set the token in an httpOnly cookie
     const cookieStore = await cookies();
@@ -61,16 +99,24 @@ export async function login(input: LoginWithEmailInput) {
       path: '/',
     });
 
+    console.log('[LOGIN] Cookie set successfully');
+    console.log('[LOGIN] Revalidating path and redirecting to home...');
+
     revalidatePath("/", "layout");
     redirect("/");
   } catch (error) {
-    console.error('Login error:', error);
+    console.error('[LOGIN] Caught exception:', error);
+    console.error('[LOGIN] Error type:', error?.constructor?.name);
+    console.error('[LOGIN] Error message:', error instanceof Error ? error.message : String(error));
+    console.error('[LOGIN] Error stack:', error instanceof Error ? error.stack : 'No stack trace');
     
     // Handle network errors
     if (error instanceof TypeError && error.message.includes('fetch')) {
+      console.error('[LOGIN] Network error detected');
       redirect("/auth/login?error=Cannot connect to authentication service. Please check your internet connection");
     }
     
+    console.error('[LOGIN] Unexpected error, redirecting with generic message');
     redirect("/auth/login?error=An unexpected error occurred. Please try again");
   }
 }
