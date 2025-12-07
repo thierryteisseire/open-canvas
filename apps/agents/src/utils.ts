@@ -404,6 +404,8 @@ const cleanBase64 = (base64String: string): string => {
   return base64String.replace(/^data:.*?;base64,/, "");
 };
 
+const MAX_PDF_TEXT_LENGTH = 50000; // Limit to ~50k characters to avoid serialization issues
+
 export async function convertPDFToText(base64PDF: string) {
   try {
     console.log(`[PDF] Starting PDF conversion, base64 length: ${base64PDF.length}`);
@@ -419,10 +421,18 @@ export async function convertPDFToText(base64PDF: string) {
     // Parse PDF
     const data = await pdfParse(pdfBuffer);
     console.log(`[PDF] Successfully parsed PDF, extracted ${data.text.length} characters`);
-    console.log(`[PDF] First 200 chars: ${data.text.substring(0, 200)}`);
+    
+    // Truncate if too large to avoid serialization issues
+    let text = data.text;
+    if (text.length > MAX_PDF_TEXT_LENGTH) {
+      console.log(`[PDF] WARNING: Text too large (${text.length} chars), truncating to ${MAX_PDF_TEXT_LENGTH} chars`);
+      text = text.substring(0, MAX_PDF_TEXT_LENGTH) + "\n\n[... Document truncated due to size ...]";
+    }
+    
+    console.log(`[PDF] First 200 chars: ${text.substring(0, 200)}`);
 
     // Get text content
-    return data.text;
+    return text;
   } catch (error) {
     console.error("[PDF] Error converting PDF to text:", error);
     throw error;
